@@ -23,7 +23,7 @@ def iterable(obj):
     return True
 
 
-class Render:
+class Tpl:
     def __init__(self, synx: str, ctx):
         self.synx = synx
         self.ctx = ctx
@@ -52,7 +52,7 @@ class Render:
             for prop in props:
                 value = getattr(objs, prop)
             return value
-        except AttributeError as e:
+        except AttributeError:
             pass
         # then enumerate it like common iterable obj
         res = []
@@ -83,11 +83,8 @@ class Render:
 
 
 def render_template_string(text: str, **ctx):
-    res = re.search(SYMBOL, text)
-    if res:
-        symbol = res.group(1)
-        val = Render(symbol, ctx).render()
-        text = text[:res.start()] + str(val) + text[res.end():]
-        text = render_template_string(text, **ctx)
+    while match := re.search(SYMBOL, text):
+        r = Tpl(match.group(1), ctx=ctx)
+        text = text[:match.start()] + r.render() + text[match.end():]
     return text
 
